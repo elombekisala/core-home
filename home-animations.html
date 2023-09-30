@@ -1,0 +1,267 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/Flip.min.js"></script>
+<script src="https://unpkg.com/@barba/core"></script>
+<script>
+window.addEventListener("DOMContentLoaded", (event) => {
+  // SETUP PLUGINS
+  gsap.registerPlugin(ScrollTrigger, Flip);
+  ScrollTrigger.normalizeScroll(true);
+  // SETUP ELEMENTS
+  let zoneEl = $("[js-scrollflip-element='zone']"),
+    targetEl = $("[js-scrollflip-element='target']").first();
+  // SETUP TIMELINE
+  let tl;
+  function createTimeline() {
+    if (tl) {
+      tl.kill();
+      gsap.set(targetEl, { clearProps: "all" });
+    }
+    tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: zoneEl.first(),
+        start: "center center",
+        endTrigger: zoneEl.last(),
+        end: "center center",
+        scrub: true
+      }
+    });
+    zoneEl.each(function (index) {
+      let nextZoneEl = zoneEl.eq(index + 1);
+      if (nextZoneEl.length) {
+        let nextZoneDistance =
+          nextZoneEl.offset().top + nextZoneEl.innerHeight() / 2;
+        let thisZoneDistance = $(this).offset().top + $(this).innerHeight() / 2;
+        let zoneDifference = nextZoneDistance - thisZoneDistance;
+        tl.add(
+          Flip.fit(targetEl[0], nextZoneEl[0], {
+            duration: zoneDifference,
+            ease: "power2.inOut"
+          })
+        );
+      }
+    });
+  }
+  createTimeline();
+  // SETUP RESIZE
+  let resizeTimer;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      createTimeline();
+    }, 250);
+  });
+});
+</script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+ScrollTrigger.defaults({
+  markers: false
+});
+
+});
+
+// Header Text Hide
+$(".header_text-move").each(function (index) {
+  let triggerElement = $(this);
+  let targetElement = $(this);
+
+  let tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: triggerElement,
+      // trigger element - viewport
+      start: "-100% top",
+      end: "30% top",
+      scrub: 0.8
+    }
+  });
+  tl.to(targetElement, {
+    y: "100%",
+    duration: 1
+  });
+});
+
+// Grid Title Change
+$(".grid_text-item").eq(0).addClass("is--active");
+$(".grid_wrapper").each(function (index) {
+  let triggerElement = $(this);
+  let myIndex = $(this).index();
+  let targetElement = $(".grid_text-item").eq(myIndex);
+  let tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: triggerElement,
+      // trigger element - viewport
+      start: "top bottom",
+      end: "bottom bottom",
+      onEnter: () => {
+        $(".grid_text-item").removeClass("is--active");
+        targetElement.addClass("is--active");
+      },
+      onEnterBack: () => {
+        $(".grid_text-item").removeClass("is--active");
+        targetElement.addClass("is--active");
+      }
+    }
+  });
+});
+
+// Grid Image Move 1
+$(".grid_item:nth-child(3n+1)").each(function (index) {
+  let triggerElement = $(this);
+  let targetElement = $(this);
+
+  let tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: triggerElement,
+      // trigger element - viewport
+      start: "top bottom",
+      end: "bottom top",
+      scrub: 1
+    }
+  });
+  tl.to(targetElement, {
+    y: "-30%",
+    duration: 1
+  });
+});
+
+// Grid Image Move 2
+$(".grid_item:nth-child(3n+2)").each(function (index) {
+  let triggerElement = $(this);
+  let targetElement = $(this);
+
+  let tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: triggerElement,
+      // trigger element - viewport
+      start: "top bottom",
+      end: "bottom top",
+      scrub: 2
+    }
+  });
+  tl.to(targetElement, {
+    y: "-50%",
+    duration: 1
+  });
+});
+
+// Grid Image Move 3
+$(".grid_item:nth-child(3n+3)").each(function (index) {
+  let triggerElement = $(this);
+  let targetElement = $(this);
+
+  let tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: triggerElement,
+      // trigger element - viewport
+      start: "top bottom",
+      end: "bottom top",
+      scrub: 1.5
+    }
+  });
+  tl.to(targetElement, {
+    y: "-70%",
+    duration: 1
+  });
+});
+</script>
+
+<script>
+function resetWebflow(data) {
+  let parser = new DOMParser();
+  let dom = parser.parseFromString(data.next.html, "text/html");
+  let webflowPageId = $(dom).find("html").attr("data-wf-page");
+  $("html").attr("data-wf-page", webflowPageId);
+  window.Webflow && window.Webflow.destroy();
+  window.Webflow && window.Webflow.ready();
+  window.Webflow && window.Webflow.require("ix2").init();
+}
+
+barba.init({
+  preventRunning: true,
+  transitions: [
+    {
+      sync: true,
+      from: {
+        namespace: ["grid-page"]
+      },
+      leave(data) {
+        return gsap.fromTo(
+          data.current.container,
+          { xPercent: 0 },
+          {
+            xPercent: -100,
+            ease: "power2.inOut",
+            duration: 0.8
+          }
+        );
+      },
+      enter(data) {
+        let transitionData = data;
+        $(data.next.container).addClass("fixed");
+        return gsap.fromTo(
+          data.next.container,
+          { xPercent: 100 },
+          {
+            xPercent: 0,
+            ease: "power2.inOut",
+            duration: 0.8,
+            onComplete: () => {
+              $(window).scrollTop(0);
+              $(data.next.container).removeClass("fixed");
+              resetWebflow(transitionData);
+            }
+          }
+        );
+      }
+    },
+    {
+      sync: true,
+      from: {
+        namespace: ["cms-page"]
+      },
+      leave(data) {
+        return gsap.fromTo(
+          data.current.container,
+          { xPercent: 0 },
+          {
+            xPercent: 100,
+            ease: "power2.inOut",
+            duration: 0.8
+          }
+        );
+      },
+      enter(data) {
+        let transitionData = data;
+        $(data.next.container).addClass("fixed");
+        return gsap.fromTo(
+          data.next.container,
+          { xPercent: -100 },
+          {
+            xPercent: 0,
+            ease: "power2.inOut",
+            duration: 0.8,
+            onComplete: () => {
+              $(window).scrollTop(0);
+              $(data.next.container).removeClass("fixed");
+              resetWebflow(transitionData);
+            }
+          }
+        );
+      }
+    }
+  ],
+  views: [
+    {
+      namespace: "grid-page",
+      beforeEnter() {
+        // run custom js for the grid-page
+      },
+      afterEnter() {
+        // run custom js for the grid-page
+      }
+    }
+  ]
+});
+</script>
